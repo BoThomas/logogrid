@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Logo Color Grid</title>
 <style>
   :root {
@@ -17,6 +18,8 @@
     min-height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     background: #111;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
   }
 
   #grid {
@@ -53,101 +56,132 @@
   #panel {
     position: fixed;
     left: 50%;
-    bottom: 12px;
+    bottom: 16px;
     transform: translateX(-50%);
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: nowrap;
-    gap: 10px 14px;
+    gap: 12px 16px;
     width: max-content;
-    max-width: calc(100vw - 20px);
-    background: rgba(15, 15, 15, 0.55);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: rgba(255, 255, 255, 0.85);
-    padding: 8px 16px;
-    border-radius: 18px;
-    font-size: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    opacity: 0.6;
-    transition: opacity 0.2s ease, background 0.2s ease;
+    max-width: calc(100vw - 24px);
+    background: rgba(20, 20, 22, 0.82);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    color: rgba(255, 255, 255, 0.95);
+    padding: 12px 18px;
+    border-radius: 22px;
+    font-size: 14px;
+    line-height: 1;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    will-change: transform;
+    -webkit-transform: translateX(-50%) translateZ(0);
   }
 
   #panel:hover,
   #panel:focus-within,
   #panel.active {
     opacity: 1;
-    background: rgba(15, 15, 15, 0.85);
   }
 
   #panel .field {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex: 0 1 auto;
     min-width: 0;
   }
 
   #panel .field label {
-    opacity: 0.7;
+    opacity: 0.75;
     flex-shrink: 0;
+    font-weight: 500;
   }
 
   #panel .val {
-    opacity: 0.5;
+    opacity: 0.6;
     font-variant-numeric: tabular-nums;
-    width: 34px;
+    min-width: 38px;
+    text-align: right;
     flex-shrink: 0;
   }
 
   #uploadLabel, #refreshBtn {
     flex-shrink: 0;
-  }
-
-  input[type="range"] {
-    width: 90px;
-    min-width: 60px;
-    flex: 1 1 60px;
-    height: 24px;
-    accent-color: #6ee7ff;
-  }
-
-  #uploadLabel, #refreshBtn {
     cursor: pointer;
-    padding: 6px 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
     border-radius: 999px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.18);
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, transform 0.1s ease;
     -webkit-tap-highlight-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    white-space: nowrap;
   }
 
-  #uploadLabel:hover, #refreshBtn:hover,
+  #uploadLabel:hover, #refreshBtn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
   #uploadLabel:active, #refreshBtn:active {
-    background: rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.28);
+    transform: scale(0.97);
   }
 
   #fileInput { display: none; }
 
+  input[type="range"] {
+    width: 130px;
+    min-width: 80px;
+    flex: 1 1 80px;
+    height: 32px;
+    accent-color: #6ee7ff;
+  }
+
   #divider {
     width: 1px;
-    height: 16px;
-    background: rgba(255,255,255,0.2);
+    height: 22px;
+    background: rgba(255,255,255,0.18);
     flex-shrink: 0;
   }
 
-  @media (max-width: 600px) {
+  /* Touch devices: keep panel fully visible, no hover/opacity flicker on scroll */
+  @media (pointer: coarse) {
+    #panel {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 640px) {
     #panel {
       flex-wrap: wrap;
+      justify-content: center;
       width: auto;
+      padding: 10px 14px;
+      bottom: env(safe-area-inset-bottom, 12px);
+      margin-bottom: 12px;
+      gap: 8px 12px;
+      font-size: 13px;
     }
     input[type="range"] {
-      width: 70px;
+      width: 100px;
     }
     #divider { display: none; }
+    #uploadLabel, #refreshBtn {
+      padding: 9px 14px;
+      font-size: 13px;
+    }
   }
 </style>
 </head>
@@ -290,23 +324,36 @@
     loadedCount = 0;
     cellColors = [];
 
-    const viewportRows = Math.ceil(window.innerHeight / boxSize) + 1;
-    const bufferRows = 2;
+    const viewportRows = Math.ceil(window.innerHeight / boxSize) + 2;
+    const bufferRows = 3;
     appendCells(cols * (viewportRows + bufferRows));
   }
 
   function loadMoreRows() {
-    const extraRows = 3;
+    // Scale row count with box size so a single load always pushes the
+    // sentinel out of the pre-load zone (smaller boxes -> more rows).
+    const extraRows = Math.max(3, Math.ceil(700 / boxSize));
     appendCells(cols * extraRows);
   }
 
+  // IntersectionObserver only fires on state transitions. After appending
+  // rows the sentinel often stays inside the rootMargin zone, so we loop
+  // via rAF until it has been pushed far enough below the viewport.
+  let loadRaf = 0;
+  function pumpLazyLoad() {
+    loadRaf = 0;
+    const rect = sentinel.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 700) {
+      loadMoreRows();
+      loadRaf = requestAnimationFrame(pumpLazyLoad);
+    }
+  }
+
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        loadMoreRows();
-      }
-    });
-  }, { rootMargin: '1000px 0px 1000px 0px' });
+    if (entries.some((e) => e.isIntersecting) && !loadRaf) {
+      loadRaf = requestAnimationFrame(pumpLazyLoad);
+    }
+  }, { rootMargin: '700px 0px 700px 0px' });
 
   observer.observe(sentinel);
 
@@ -342,9 +389,23 @@
   });
 
   let resizeTimer = null;
+  // Pinch-zoom on iOS fires `resize`, but the layout width in CSS px
+  // doesn't change the number of columns. Only rebuild the grid when the
+  // column count actually differs, so zooming stays smooth.
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(resetGrid, 150);
+    resizeTimer = setTimeout(() => {
+      const newCols = Math.max(1, Math.floor(window.innerWidth / boxSize));
+      if (newCols !== cols) {
+        resetGrid();
+      }
+    }, 200);
+  });
+
+  // Orientation change is a real layout change; always rebuild after it.
+  window.addEventListener('orientationchange', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resetGrid, 250);
   });
 
   // On touch devices there's no hover, so keep the panel fully visible
